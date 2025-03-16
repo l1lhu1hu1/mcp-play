@@ -42,6 +42,20 @@ server.tool(
   })
 );
 
+server.prompt(
+  "getReversedText",
+  { text: z.string() },
+  ({ text }) => ({
+    messages: [{
+      role: "user",
+      content: {
+        type: "text",
+        text: `Please reverse text:\n\n${text}`
+      }
+    }]
+  })
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
