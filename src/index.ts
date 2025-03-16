@@ -32,15 +32,13 @@ server.tool(
   }
 );
 
-// Add a dynamic greeting resource
-server.resource(
-  "greeting",
-  new ResourceTemplate("greeting://{name}", { list: undefined }),
-  async (uri, { name }) => ({
-    contents: [{
-      uri: uri.href,
-      text: `Hello, ${name}!`
-    }]
+// Add an addition tool
+server.tool(
+  "getSumOfTwoNumbers",
+  "Add two numbers together and return the result.",
+  { a: z.number(), b: z.number() },
+  async ({ a, b }) => ({
+    content: [{ type: "text", text: String(a + b) }]
   })
 );
 
