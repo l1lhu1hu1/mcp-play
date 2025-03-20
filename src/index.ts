@@ -56,6 +56,28 @@ server.prompt(
   })
 );
 
+server.resource(
+  "config",
+  "config://app",
+  async (uri) => ({
+    contents: [{
+      uri: uri.href,
+      text: "App configuration here"
+    }]
+  })
+);
+
+server.resource(
+  "echo",
+  new ResourceTemplate("echo://{message}", { list: undefined }),
+  async (uri, { message }) => ({
+    contents: [{
+      uri: uri.href,
+      text: `Resource echo: ${message}`
+    }]
+  })
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
