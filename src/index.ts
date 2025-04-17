@@ -1,13 +1,37 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-
+import { readdir, readFile, stat } from 'fs/promises';
+import path from 'path';
+import 'dotenv/config';
 
 // サーバーインスタンスの作成
 export const server = new McpServer({
   name: "mcp-play",
   version: "0.1.0",
 });
+
+const getAllTsxFilesContent = async (dirPath: string): Promise<string> => {
+  let result = '';
+
+  const files = await readdir(dirPath);
+
+  for (const file of files) {
+    const fullPath = path.join(dirPath, file);
+    const fileStat = await stat(fullPath);
+
+    if (fileStat.isDirectory()) {
+      // 再帰的に探索
+      result += await getAllTsxFilesContent(fullPath);
+    } else if (file.endsWith('.tsx')) {
+      const content = await readFile(fullPath, 'utf-8');
+      result += `\n// ===== File: ${fullPath} =====\n`;
+      result += content + '\n';
+    }
+  }
+
+  return result;
+};
 
 server.tool(
   // ツールの名前
@@ -95,6 +119,27 @@ server.resource(
       text: `Resource echo: ${message}`
     }]
   })
+);
+
+server.tool(
+  // ツールの名前
+  "getComponents",
+  // ツールの説明
+  "Returns all source code in text format.",
+  // ツールの引数を定義するスキーマ
+  {},
+  // ツールが呼び出されたときに実行される関数
+  async () => {
+    const allCode = await getAllTsxFilesContent(process.env.COMPONENTS_DIR as string)
+    return {
+      content: [
+        {
+          type: "text",
+          text: allCode,
+        },
+      ],
+    };
+  }
 );
 
 async function main() {
