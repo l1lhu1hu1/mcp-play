@@ -68,6 +68,25 @@ server.resource(
 );
 
 server.resource(
+  "TypeScript Style Guide",
+  "https://google.github.io/styleguide/tsguide.html",
+  async (uri) => {
+    const response = await fetch(uri.href);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch resource: ${response.statusText}`);
+    }
+    const text = await response.text();
+
+    return {
+      contents: [{
+        uri: uri.href,
+        text: text,
+      }]
+    };
+  }
+);
+
+server.resource(
   "echo",
   new ResourceTemplate("echo://{message}", { list: undefined }),
   async (uri, { message }) => ({
